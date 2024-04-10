@@ -1,0 +1,23 @@
+{
+    "name": "jenson0512/city",
+    "description": "Jenson City Packages",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jenson Wang",
+            "email": "rebing0512@outlook.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.2.0",
+        "guzzlehttp/guzzle": "~6.0",
+        "catfan/medoo": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jenson\\City\\": "src/"
+        }
+    }
+}
