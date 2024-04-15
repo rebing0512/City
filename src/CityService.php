@@ -67,21 +67,82 @@ class CityService
     }
 
     /**
-     * 获取城市邮编
+     * 获取城市子分类（ALL todo：待优化）
      *
      * @param $page
      * @param $page_size
      * @param $cityName
      * @return array|null
      */
-    public function getCitySubInfo($cityName){
+    public function getCitySubInfo($layer = 1,$cityName = "中国"){
         $DB = new \Jenson\City\Helper\DB();
-        $columns = ['id','name','postal_code'];
-        $where = [];
-        if($cityName){
-            $where["name[~]"] = $cityName;
+        $columns = ['id','name','postal_code','short_name','parent_id','type','area_code'];
+        $where = [
+            'name'=>$cityName??'中国',
+        ];
+        $data =  $DB->database->get($this->table,$columns,$where);
+        if(empty($data)){
+            return '';
         }
-        $data =  $DB->database->select($this->table,$columns,$where);
+        #z最多获取5层数据
+        if($layer > 4){
+            $layer = 4;
+        }
+        $where = [
+            'parent_id' => $data['id']
+        ];
+        $sub = $DB->database->select($this->table,$columns,$where);
+        #省份
+        if(!empty($sub) && $layer >= 1)
+            foreach ($sub as $k_sub => &$v_sub){
+                $where1 = [
+                    'parent_id' => $v_sub['id']
+                ];
+                $sub_sub =  $DB->database->select($this->table,$columns,$where1);
+                if(!empty($sub_sub) && $layer >= 2){
+                    $sub[$k_sub]['sub'] = $sub_sub;
+                    #市
+                    foreach ($sub_sub as $k_sub_sub => &$v_sub_sub){
+                        $where2 = [
+                            'parent_id' => $v_sub_sub['id']
+                        ];
+                        $sub_sub_sub =  $DB->database->select($this->table,$columns,$where2);
+                        if(!empty($sub_sub_sub) && $layer >= 3){
+                            $sub_sub[$k_sub_sub]['sub'] = $sub_sub_sub;
+//                            #区/县
+//                            foreach ($sub_sub_sub as $k_sub_sub_sub => &$v_sub_sub_sub){
+//                                $where3 = [
+//                                    'parent_id' => $v_sub_sub_sub['id']
+//                                ];
+//                                $sub_sub_sub_sub =  $DB->database->select($this->table,$columns,$where3);
+//                                if(!empty($sub_sub_sub_sub)){
+//                                    $sub_sub_sub[$k_sub_sub_sub]['sub'] = $sub_sub;
+//                                }
+//                            }
+                        }
+                    }
+                }
+            }{
+            $data['sub'] = $sub;
+        }
+//        $where_sub = [
+//            'parent_id'=>$data['id']
+//        ];
+//        $sub = $DB->database->select($this->table,$columns,$where_sub);
+//        $data['sub'] = $sub;
+        return $data;
+    }
+
+    public function getSubData($parent_id = 1,$columns = '*'){
+        $where = [
+            'parent_id' => $parent_id
+        ];
+        $DB = new \Jenson\City\Helper\DB();
+        $sub = $DB->database->select($this->table, $columns, $where);
+        $data = array();
+        if($sub){
+            $data = $sub;
+        }
         return $data;
     }
 }

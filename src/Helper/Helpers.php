@@ -42,5 +42,12 @@ class Helpers
         ];
     }
 
-
+    public static function getCitySubInfo($layer = 1,$cityName = ''){
+        $city = new CityService();
+        $data = $city->getCitySubInfo($layer,$cityName);
+        return [
+            'cocde' => 200,
+            'data' => $data
+        ];
+    }
 }
